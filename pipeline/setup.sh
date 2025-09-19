@@ -287,12 +287,6 @@ run_pipeline() {
     local cmd="nextflow run main.nf"
     cmd="$cmd -c config/nextflow.config"
     cmd="$cmd -profile standard"
-    
-    # Add traits parameter if specified
-    if [[ -n "$traits" ]]; then
-        cmd="$cmd --traits '$traits'"
-    fi
-    
     cmd="$cmd --phi_list '$phi_list'"
     cmd="$cmd -with-report 'logs/report_$(date +%Y%m%d_%H%M%S).html'"
     cmd="$cmd -with-timeline 'logs/timeline_$(date +%Y%m%d_%H%M%S).html'"
