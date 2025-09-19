@@ -133,11 +133,11 @@ for (BIMPREFIX in ALLBIMPREFIX) { # models are build for each set of variants.
         expected.output <- paste0(
           OUTPUTDIR, "/", prscsname, "/", prscsname,
           "_pst_eff_a1_b0.5_phi",thisphi,"_chr", chr, ".txt")
-        if (!file.exists(expected.output)) {        
-          system(paste0(
-            "cd ", jobs, " && ", # so that jobs output comes here 
-            b.sub, jobs, "/", job.id, ".sh"))
-        }
+        #if (!file.exists(expected.output)) {        
+        #  system(paste0(
+        #    "cd ", jobs, " && ", # so that jobs output comes here 
+        #    b.sub, jobs, "/", job.id, ".sh"))
+        #}
       } # chr loop ends
     } # files loop ends
     
