@@ -79,6 +79,8 @@ process GENERATE_MODELS {
     """
 }
 
+
+
 process JOIN_MODELS {
     tag "Join chromosome-specific PRScs models"
     publishDir "${params.outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
