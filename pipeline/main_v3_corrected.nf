@@ -8,7 +8,18 @@ nextflow.enable.dsl = 2
     Automated PRScs workflow for polygenic risk score calculation
     Based on Georgios Voloudakis R scripts
 ========================================================================================
+*/
 
+import utils.Recipe
+import java.nio.file.Paths
+
+// We source recipe parameters
+def RECIPE = Recipe.load(file(params.recipe).toPath())
+params.main_output_dir   = RECIPE['MAINOUTPUTDIR']
+params.gwas_dir_basename = Recipe.basename(RECIPE['GWAS.DIR'])
+def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )
+
+/*
 ========================================================================================
     PROCESSES
 ========================================================================================
@@ -78,6 +89,50 @@ process GENERATE_MODELS {
     echo "PRScs model generation completed at: \$(date)"
     """
 }
+
+
+process DISCOVER_JOB_SCRIPTS {
+  tag "discover jobs"
+  publishDir "${params.outdir}/logs", mode: 'copy', pattern: "discover_jobs.out"
+
+  input:
+  val models_root
+
+  output:
+  path "job_list.txt", emit: list
+
+  script:
+  """
+  set -euo pipefail
+  find "${models_root}" -type f -path "*/jobs/*.sh" -print > job_list.txt
+  echo "Found \$(wc -l < job_list.txt) job scripts under ${models_root}" > discover_jobs.out
+  """
+}
+
+
+process RUN_JOB_SCRIPT {
+  tag { scriptFile.baseName }
+  publishDir "${params.outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+
+  input:
+  path scriptFile
+
+  output:
+  val true, emit: complete
+  path "run_job.out", emit: log_out, optional: true
+  path "run_job.err", emit: log_err, optional: true
+
+  // Optionally throttle parallelism: withName:RUN_JOB_SCRIPT { maxForks 8 }
+  script:
+  """
+  set -euo pipefail
+  cd "\$(dirname "${scriptFile}")"
+  chmod +x "\$(basename "${scriptFile}")" || true
+  bash "\$(basename "${scriptFile}")" > run_job.out 2> run_job.err
+  """
+}
+
+
 
 
 
@@ -173,6 +228,7 @@ workflow {
     Superpopulation     : ${params.superpopulation}
     Output directory    : ${params.outdir}
     Scripts directory   : ${params.scripts_dir}
+    Stored Jobs Dir     : ${modelsDir}
     ========================================================================================
     """
 
@@ -182,7 +238,15 @@ workflow {
     
     // 2. R2: Generate PRScs models (depends on R1)
     GENERATE_MODELS(READY_GWAS.out.complete)
-    
+
+    // Discover all job scripts once models are generated
+    DISCOVER_JOB_SCRIPTS(modelsDir.toString())
+    def jobScripts = DISCOVER_JOB_SCRIPTS.out.list.splitText()      // one line -> one item
+                            .map { file(it) }                       // cast to Path
+
+    // Run each script (parallel tasks)
+    RUN_JOB_SCRIPT(jobScripts)
+
     // 3. R3: Join chromosome-specific models (depends on R2)
     JOIN_MODELS(GENERATE_MODELS.out.complete)
     

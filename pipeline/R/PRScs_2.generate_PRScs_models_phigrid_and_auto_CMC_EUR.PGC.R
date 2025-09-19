@@ -88,6 +88,7 @@ if (POP == "EUR") {LDREF <- LDREF.EUR} else {
 ## Getting GWAS information
 gwass <- fread(MASTERLIST) 
 
+MAINOUTPUTDIR <- file.path(MAINOUTPUTDIR, basename(INPUT))
 ## Submittting the jobs
 for (BIMPREFIX in ALLBIMPREFIX) { # models are build for each set of variants.
   if (cluster == "genisis") {
