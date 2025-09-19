@@ -15,9 +15,29 @@ import java.nio.file.Paths
 
 // We source recipe parameters
 def recipe = Recipe.load(file(params.recipe).toPath())      // nextflow automatically assigns CLI arguments to params.
-params.main_output_dir   = recipe['MAINOUTPUTDIR']
-params.gwas_dir_basename = Recipe.basename(recipe['GWAS.DIR'])
-def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )
+// Assign all recipe parameters to params
+params.workdir = recipe['WORKDIR']                             // Where everything is run and output is saved
+params.original_genfile_type = recipe['ORIGINAL.GENFILE.TYPE']  // Genotype file type (empty for QC'd data)
+params.original_genfile = recipe['ORIGINAL.GENFILE']            // Original genotype file (empty for QC'd data)
+params.filtered_bim_prefix = recipe['FILTERED.BIM.PREFIX']      // Filtered by Deepika
+params.original_gwas_dir = recipe['ORIGINAL.GWAS.DIR']          // Directory containing original GWAS summary statistics
+params.gwas_dir = recipe['GWAS.DIR']                            // Directory containing formatted GWAS files (output of step 1, main input of step 2)
+params.population = recipe['POPULATION']                        // Target population
+params.phi = recipe['PHI']                                      // PRS-CS shrinkage parameter values
+params.masterlist = recipe['MASTERLIST']                        // Info table for GWASs based on summary stats in GWAS folder
+params.scores_output_dir = recipe['SCORESOUTPUTDIR']            // Directory where individual PRS scores are stored
+params.cluster_file = recipe['CLUSTER.FILE']                    // Environment specific reference parameters
+params.cohort_file = recipe['COHORT.FILE']                      // Should be constant, cohort-parameters are picked by the cohort var
+params.cluster = recipe['CLUSTER']                              // Used as reference by the Clusters.csv file
+params.cohort = recipe['COHORT']                                // Used as reference at the Cohorts.csv file to source cohort specific data
+params.superpopulation = recipe['SUPERPOPULATION']              // Used as reference at both Clusters.csv and Cohorts.csv
+
+// modelsDir is used to source the generated models jobs
+params.gwas_dir_basename = basename(params.gwas_dir)
+def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )    
+
+// logs_outdir is now analysis specific
+params.logs_outdir = ( file(params.logs_outdir) / basename(params.recipe))
 
 /*
 ========================================================================================
@@ -27,7 +47,7 @@ def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )
 
 process READY_GWAS {
     tag "Format GWAS summary statistics"
-    publishDir "${params.nf_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
     
     output:
     val true, emit: complete
@@ -56,7 +76,7 @@ process READY_GWAS {
 
 process GENERATE_MODELS {
     tag "Generate PRScs models"
-    publishDir "${params.nf_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
     
     input:
     val ready_complete
@@ -93,7 +113,7 @@ process GENERATE_MODELS {
 
 process DISCOVER_JOB_SCRIPTS {
   tag "discover jobs"
-  publishDir "${params.nf_outdir}/logs", mode: 'copy', pattern: "discover_jobs.out"
+  publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "discover_jobs.out"
 
   input:
   val models_root
@@ -112,7 +132,7 @@ process DISCOVER_JOB_SCRIPTS {
 
 process RUN_JOB_SCRIPT {
   tag { scriptFile.baseName }
-  publishDir "${params.nf_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+  publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
 
   input:
   path scriptFile
@@ -138,7 +158,7 @@ process RUN_JOB_SCRIPT {
 
 process JOIN_MODELS {
     tag "Join chromosome-specific PRScs models"
-    publishDir "${params.nf_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
     
     input:
     val models_complete
@@ -174,7 +194,7 @@ process JOIN_MODELS {
 
 process SCORE_INDIVIDUALS {
     tag "Score individuals using PRScs models"
-    publishDir "${params.nf_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
     
     input:
     val join_complete
@@ -226,7 +246,7 @@ workflow {
     Cluster             : ${params.cluster}
     Cohort              : ${params.cohort}
     Superpopulation     : ${params.superpopulation}
-    Output directory    : ${params.nf_outdir}
+    Output directory    : ${params.logs_outdir}
     Scripts directory   : ${params.scripts_dir}
     Stored Jobs Dir     : ${modelsDir}
     ========================================================================================
@@ -273,7 +293,7 @@ workflow.onComplete {
     Error report: ${workflow.errorReport ?: 'No errors'}
     ========================================================================================
     
-    Results can be found in: ${params.nf_outdir}
+    Results can be found in: ${params.logs_outdir}
     
     Pipeline Steps Completed:
     1. ✓ GWAS formatting (PRScs_1.ready_GWAS_CMC.R)

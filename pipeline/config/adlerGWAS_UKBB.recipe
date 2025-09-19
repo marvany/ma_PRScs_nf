@@ -7,6 +7,11 @@ ORIGINAL.GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_origin
 GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_formatted,
 POPULATION,EUR,
 PHI,"auto,1e-06,1e-04,1e-02,1e+00",
-MASTERLIST,/sc/arion/projects/va-biobank/Georgios/tools/gentools/settings/rachel_GWAS_master_list.csv,Info table for GWASs only based on what summary stats are in the GWAS folder
+MASTERLIST,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/ma_GWAS_master_list.csv,Info table for GWASs only based on what summary stats are in the GWAS folder
 MAINOUTPUTDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/models,
 SCORESOUTPUTDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/scores,
+CLUSTER.FILE,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/Clusters.csv,Cluster configuration file
+COHORT.FILE,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/Cohorts.csv,Cohort configuration file
+CLUSTER,minerva,Cluster name
+COHORT,psychAD_EUR,Cohort identifier
+SUPERPOPULATION,EUR,Target superpopulation
