@@ -37,7 +37,8 @@ params.gwas_dir_basename = basename(params.gwas_dir)
 def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )    
 
 // logs_outdir is now analysis specific
-params.logs_outdir = ( file(params.logs_outdir) / basename(params.recipe))
+def recipeBase = file(params.recipe).baseName   // without extension
+params.logs_outdir = (file(params.logs_outdir) / 'logs' / recipeBase).toString()
 
 /*
 ========================================================================================
