@@ -19,33 +19,31 @@ get_entry <- function(key, recipe) {
 }
 
 option_list <- list(
-  make_option("--recipe",     type = "character", help = "Recipe"),
-  make_option("--firstrun",  type = "logical", default = FALSE,
+  make_option("-r", "--recipe",     type = "character", help = "Recipe"),
+  make_option("-f", "--firstrun",  type = "logical", default = FALSE,
               help = "First pass to inspect headers and write column.types.tsv [default %default]"),
-  make_option("--output",    type = "character", default = "/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/",
+  make_option("output", "--formattedGWASdir",    type = "character", default = "/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/",
               help = "OUTPUTDIR (directory to write formatted GWAS files)"),
-  make_option("--coltypes",  type = "character", default = "/sc/arion/projects/va-biobank/Georgios/tools/gentools/modules/PRScs/resources/GWAS.column.types.csv",
+  make_option("-c", "--coltypes",  type = "character", default = "/sc/arion/projects/va-biobank/Georgios/tools/gentools/modules/PRScs/resources/GWAS.column.types.csv",
               help = "CSV mapping of column names to Types"),
-  make_option("--convdir",   type = "character", default = "/group/research/mvp006/data/PRScs/Conversion_files",
+  make_option("-conv", "--convdir",   type = "character", default = "/group/research/mvp006/data/PRScs/Conversion_files",
               help = "Directory holding/where to write conversion tables"),
-  make_option("--cluster",   type = "character", default = "minerva",
+  make_option("-cl", "--cluster",   type = "character", default = "minerva",
               help = "Cluster name toggle for behavior (e.g., minerva | genisis)"),
-  make_option("--wd",     type = "character", default = "/sc/arion/projects/va-biobank/PROJECTS/prscs_psychad_nf_v1",
+  make_option("-wd", "--wd",     type = "character", default = "/sc/arion/projects/va-biobank/PROJECTS/prscs_psychad_nf_v1",
               help = "Working directory to set at start")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
 
 ### Settings
-setwd(opt$setwd)
-recipe             <- opt$recipe
-firstrun            <- isTRUE(opt$firstrun)
-OUTPUTDIR           <- opt$output
-COLUMNTYPES         <- opt$coltypes
+setwd(opt$wd)  
+
+recipe              <- opt$recipe
+firstrun            <- isTRUE(opt$firstrun) 
+INPUTGWASDIR       <- get_entry("GWAS.DIR", recipe)   # input GWAS (ORIGINAL.GWAS.DIR)
+OUTPUTDIR           <- opt$formattedGWASdir           # formatted GWAS will be stored here
 CONVERSIONTABLESDIR <- opt$convdir
-INPUTGWASDIR        <- opt$recipe
-cluster             <- opt$cluster
-recipe             <- opt$recipe
 
 
 WORKDIR               <- get_entry("WORKDIR", recipe)
@@ -53,18 +51,18 @@ ORIGINAL.GENFILE.TYPE <- get_entry("ORIGINAL.GENFILE.TYPE", recipe)
 ORIGINAL.GENFILE      <- get_entry("ORIGINAL.GENFILE", recipe)
 FILTERED.BIM.PREFIX   <- get_entry("FILTERED.BIM.PREFIX", recipe)
 ORIGINAL.GWAS.DIR     <- get_entry("ORIGINAL.GWAS.DIR", recipe)
-GWAS.DIR              <- get_entry("GWAS.DIR", recipe)
+INPUTGWASDIR          <- get_entry("GWAS.DIR", recipe)
 POPULATION            <- get_entry("POPULATION", recipe)
 MASTERLIST            <- get_entry("MASTERLIST", recipe)
-MAINOUTPUTDIR         <- get_entry("MAINOUTPUTDIR", recipe)
-SCORESOUTPUTDIR       <- get_entry("SCORESOUTPUTDIR", recipe)
+MAINOUTPUTDIR         <- get_entry("MAINOUTPUTDIR", recipe)   # weights
+SCORESOUTPUTDIR       <- get_entry("SCORESOUTPUTDIR", recipe) # scores
 
 
 
 
 
 message(sprintf("firstrun=%s\nINPUTGWASDIR=%s\nOUTPUTDIR=%s\nCOLUMNTYPES=%s\nCONVERSIONTABLESDIR=%s\ncluster=%s",
-                firstrun, INPUTGWASDIR, OUTPUTDIR, COLUMNTYPES, CONVERSIONTABLESDIR, cluster))
+                firstrun, recipe, OUTPUTDIR, COLUMNTYPES, CONVERSIONTABLESDIR, cluster))
 
 ### setwd("/group/research/mvp006/data/PRScs")
 ##### firstrun = F

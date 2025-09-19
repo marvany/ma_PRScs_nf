@@ -38,7 +38,7 @@ if (is.null(opt$recipe)){
 
 ################
 # GET PARAMETERS
-if(opt$cluster == "minerva") source("/sc/arion/projects/va-biobank/PROJECTS/prscs_psychad_nf_v1/R/PRScs_0.settings_handler_CMC_EUR.PGC.R")
+if(opt$cluster == "minerva") source("/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/R/PRScs_0.settings_handler_CMC_EUR.PGC.R")
 #FIXME add the other clusters here as well (or include the PRSscs_0.settings handler here) or write it as a package
 PRSCS_settings_handler(
   # defaults are for prototyping
