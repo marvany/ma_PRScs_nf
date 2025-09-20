@@ -38,7 +38,8 @@ def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )
 
 // logs_outdir is now analysis specific
 def recipeBase = file(params.recipe).baseName   // without extension
-params.logs_outdir = (file(params.logs_outdir) / 'logs' / recipeBase).toString()
+params.logs_outdir = file(params.logs_outdir).resolve('logs').resolve(recipeBase)
+Files.createDirectories(params.logs_outdir)
 
 /*
 ========================================================================================
@@ -48,7 +49,7 @@ params.logs_outdir = (file(params.logs_outdir) / 'logs' / recipeBase).toString()
 
 process READY_GWAS {
     tag "Format GWAS summary statistics"
-    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}", mode: 'copy', pattern: "*.{out,err}"
     
     output:
     val true, emit: complete
@@ -77,7 +78,7 @@ process READY_GWAS {
 
 process GENERATE_MODELS {
     tag "Generate PRScs models"
-    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}", mode: 'copy', pattern: "*.{out,err}"
     
     input:
     val ready_complete
@@ -114,7 +115,7 @@ process GENERATE_MODELS {
 
 process DISCOVER_JOB_SCRIPTS {
   tag "discover jobs"
-  publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "discover_jobs.out"
+  publishDir "${params.logs_outdir}", mode: 'copy', pattern: "discover_jobs.out"
 
   input:
   val models_root
@@ -133,7 +134,7 @@ process DISCOVER_JOB_SCRIPTS {
 
 process RUN_JOB_SCRIPT {
   tag { scriptFile.baseName }
-  publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+  publishDir "${params.logs_outdir}", mode: 'copy', pattern: "*.{out,err}"
 
   input:
   path scriptFile
@@ -159,7 +160,7 @@ process RUN_JOB_SCRIPT {
 
 process JOIN_MODELS {
     tag "Join chromosome-specific PRScs models"
-    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}", mode: 'copy', pattern: "*.{out,err}"
     
     input:
     val models_complete
@@ -195,7 +196,7 @@ process JOIN_MODELS {
 
 process SCORE_INDIVIDUALS {
     tag "Score individuals using PRScs models"
-    publishDir "${params.logs_outdir}/logs", mode: 'copy', pattern: "*.{out,err}"
+    publishDir "${params.logs_outdir}", mode: 'copy', pattern: "*.{out,err}"
     
     input:
     val join_complete

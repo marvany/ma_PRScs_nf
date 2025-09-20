@@ -1,17 +1,17 @@
 type,entry,Notes
 WORKDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/work,Where everything is run and output is saved
+ORIGINAL.GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_original/adler_preformatted_gwass,
+GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_formatted/adler_preformatted_gwass,
+COHORT,UKBB,Cohort identifier
+FILTERED.BIM.PREFIX,/sc/arion/projects/roussp01b/deepika/psychAD_QC_PRS/variant_level_QC/psychAD_1469_samples.recode_formatted_R2_0.8_ALFA_MAF_EUR_0.01_only_EUR_samples_HWE_1e-6_geno_0.02,Individual Genotypes
 ORIGINAL.GENFILE.TYPE,,
 ORIGINAL.GENFILE,,
-FILTERED.BIM.PREFIX,/sc/arion/projects/roussp01b/deepika/psychAD_QC_PRS/variant_level_QC/psychAD_1469_samples.recode_formatted_R2_0.8_ALFA_MAF_EUR_0.01_only_EUR_samples_HWE_1e-6_geno_0.02,Filtered by Deepika
-ORIGINAL.GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_original,
-GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_formatted,
 POPULATION,EUR,
+SUPERPOPULATION,EUR,Target superpopulation
 PHI,"auto,1e-06,1e-04,1e-02,1e+00",
-MASTERLIST,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/ma_GWAS_master_list.csv,Info table for GWASs only based on what summary stats are in the GWAS folder
+MASTERLIST,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/reference/ma_GWAS_master_list.csv,Info table for GWASs only based on what summary stats are in the GWAS folder
 MAINOUTPUTDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/models,
 SCORESOUTPUTDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/scores,
 CLUSTER.FILE,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/Clusters.csv,Cluster configuration file
 COHORT.FILE,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/Cohorts.csv,Cohort configuration file
 CLUSTER,minerva,Cluster name
-COHORT,psychAD_EUR,Cohort identifier
-SUPERPOPULATION,EUR,Target superpopulation
