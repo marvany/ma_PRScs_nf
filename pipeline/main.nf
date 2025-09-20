@@ -253,6 +253,7 @@ workflow {
     Output directory    : ${params.logs_outdir}
     Scripts directory   : ${params.scripts_dir}
     Stored Jobs Dir     : ${modelsDir}
+    Logs Dir            : ${params.logs_outdir}
     ========================================================================================
     """
 
