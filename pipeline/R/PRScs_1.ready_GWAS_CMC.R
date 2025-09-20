@@ -12,6 +12,9 @@
 ##### = Whoever's code that Marios commented out
 ## --------------------------------- NEXTFLOW ADDITIONS
 
+library(optparse)
+library(data.table)
+
 get_entry <- function(key, recipe) {
   v <- recipe[type == key, entry]
   v <- v[!is.na(v) & nzchar(v)]

@@ -276,18 +276,20 @@ run_pipeline() {
     echo "   Phi values: ${2:-'auto,1e-06,1e-04,1e-02,1e+00'}"
     echo ""
     
+    
+
     # Create logs directory
     mkdir -p logs
     
     # Set default parameters
-    local traits="${1:-}"
+    local recipe_name="$1"
     local phi_list="${2:-auto,1e-06,1e-04,1e-02,1e+00}"
     
     # Build command
     local cmd="nextflow run main.nf"
     cmd="$cmd -c config/nextflow.config"
     cmd="$cmd -profile standard"
-    cmd="$cmd -recipe 'config/${recipe_name}'"
+    cmd="$cmd --recipe 'config/${recipe_name}'"
     cmd="$cmd --phi_list '$phi_list'"
     cmd="$cmd -with-report 'logs/report_$(date +%Y%m%d_%H%M%S).html'"
     cmd="$cmd -with-timeline 'logs/timeline_$(date +%Y%m%d_%H%M%S).html'"

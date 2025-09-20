@@ -14,9 +14,9 @@ import utils.Recipe
 import java.nio.file.Paths
 
 // We source recipe parameters
-def recipe = Recipe.load(file(params.recipe).toPath())      // nextflow automatically assigns CLI arguments to params.
+def recipe = Recipe.load(file(params.recipe))      // nextflow automatically assigns CLI arguments to params.
 // Assign all recipe parameters to params
-params.workdir = recipe['WORKDIR']                             // Where everything is run and output is saved
+params.workdir = recipe['WORKDIR']                              // Where everything is run and output is saved
 params.original_genfile_type = recipe['ORIGINAL.GENFILE.TYPE']  // Genotype file type (empty for QC'd data)
 params.original_genfile = recipe['ORIGINAL.GENFILE']            // Original genotype file (empty for QC'd data)
 params.filtered_bim_prefix = recipe['FILTERED.BIM.PREFIX']      // Filtered by Deepika
@@ -25,6 +25,7 @@ params.gwas_dir = recipe['GWAS.DIR']                            // Directory con
 params.population = recipe['POPULATION']                        // Target population
 params.phi = recipe['PHI']                                      // PRS-CS shrinkage parameter values
 params.masterlist = recipe['MASTERLIST']                        // Info table for GWASs based on summary stats in GWAS folder
+params.main_output_dir = recipe['MAINOUTPUTDIR']
 params.scores_output_dir = recipe['SCORESOUTPUTDIR']            // Directory where individual PRS scores are stored
 params.cluster_file = recipe['CLUSTER.FILE']                    // Environment specific reference parameters
 params.cohort_file = recipe['COHORT.FILE']                      // Should be constant, cohort-parameters are picked by the cohort var
@@ -32,14 +33,14 @@ params.cluster = recipe['CLUSTER']                              // Used as refer
 params.cohort = recipe['COHORT']                                // Used as reference at the Cohorts.csv file to source cohort specific data
 params.superpopulation = recipe['SUPERPOPULATION']              // Used as reference at both Clusters.csv and Cohorts.csv
 
+
 // modelsDir is used to source the generated models jobs
-params.gwas_dir_basename = basename(params.gwas_dir)
-def modelsDir = ( file(params.main_output_dir) / params.gwas_dir_basename )    
+params.gwas_dir_basename = file(params.gwas_dir).baseName
+def modelsDir = (file(params.main_output_dir).resolve(params.gwas_dir_basename))    
 
 // logs_outdir is now analysis specific
 def recipeBase = file(params.recipe).baseName   // without extension
 params.logs_outdir = file(params.logs_outdir).resolve('logs').resolve(recipeBase)
-Files.createDirectories(params.logs_outdir)
 
 /*
 ========================================================================================
@@ -118,6 +119,7 @@ process DISCOVER_JOB_SCRIPTS {
   publishDir "${params.logs_outdir}", mode: 'copy', pattern: "discover_jobs.out"
 
   input:
+  val _
   val models_root
 
   output:
@@ -262,7 +264,7 @@ workflow {
     GENERATE_MODELS(READY_GWAS.out.complete)
 
     // Discover all job scripts once models are generated
-    DISCOVER_JOB_SCRIPTS(modelsDir.toString())
+    DISCOVER_JOB_SCRIPTS(GENERATE_MODELS.out.complete, modelsDir.toString())
     def jobScripts = DISCOVER_JOB_SCRIPTS.out.list.splitText()      // one line -> one item
                             .map { file(it) }                       // cast to Path
 
