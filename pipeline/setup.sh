@@ -272,7 +272,7 @@ print_info "Step 6: Creating v3-specific helper functions..."
 run_pipeline() {
     echo ""
     echo "🚀 Running Nextflow PRS-CS Pipeline v3"
-    echo "   Traits: ${1:-'all available'}"
+    echo "   Recipe: ${1}"
     echo "   Phi values: ${2:-'auto,1e-06,1e-04,1e-02,1e+00'}"
     echo ""
     
@@ -289,7 +289,7 @@ run_pipeline() {
     local cmd="nextflow run main.nf"
     cmd="$cmd -c config/nextflow.config"
     cmd="$cmd -profile standard"
-    cmd="$cmd --recipe 'config/${recipe_name}'"
+    cmd="$cmd --recipe '/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/${recipe_name}'"
     cmd="$cmd --phi_list '$phi_list'"
     cmd="$cmd -with-report 'logs/report_$(date +%Y%m%d_%H%M%S).html'"
     cmd="$cmd -with-timeline 'logs/timeline_$(date +%Y%m%d_%H%M%S).html'"

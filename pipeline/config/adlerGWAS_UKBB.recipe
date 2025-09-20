@@ -1,7 +1,7 @@
 type,entry,Notes
 WORKDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/work,Where everything is run and output is saved
-ORIGINAL.GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_original/adler_preformatted_gwass,
-GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/gwas_formatted/adler_preformatted_gwass,
+ORIGINAL.GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/adler_preformatted_gwass,
+GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/adler_preformatted_gwass,
 COHORT,UKBB,Cohort identifier
 FILTERED.BIM.PREFIX,/sc/arion/projects/va-biobank/resources/LD_reference_panels/ldblk_ukbb_eur/snpinfo_ukbb_hm3,Individual Genotypes
 ORIGINAL.GENFILE.TYPE,,
@@ -15,3 +15,6 @@ SCORESOUTPUTDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/score
 CLUSTER.FILE,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/Clusters.csv,Cluster configuration file
 COHORT.FILE,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/Cohorts.csv,Cohort configuration file
 CLUSTER,minerva,Cluster name
+COLTYPES,/sc/arion/projects/va-biobank/Georgios/tools/gentools/modules/PRScs/resources/GWAS.column.types.csv,
+CONVDIR,/group/research/mvp006/data/PRScs/Conversion_files,
+FIRSTRUN,FALSE,

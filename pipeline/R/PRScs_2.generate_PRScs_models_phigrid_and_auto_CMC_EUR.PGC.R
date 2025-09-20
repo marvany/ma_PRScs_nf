@@ -15,38 +15,49 @@ library("data.table")
 
 option_list = list(
   make_option(c("-r", "--recipe"), type="character", default=NULL, 
-              help="recipe file name", metavar="character"),
-  make_option(c("-f", "--clusterfile"), type="character", default=NULL, 
-              help="Cluster settings file [default= %default]", metavar="character"),
-  make_option(c("-c", "--cluster"), type="character", default="genisis", 
-              help="Clusters: georgios_local, genisis, minerva [default= %default]", metavar="character"),
-  make_option(c("-a", "--cohortfile"), type="character", default=NULL, 
-              help="Cohort settings file [default= %default]", metavar="character"),
-  make_option(c("-b", "--cohort"), type="character", default="MVP", 
-              help="Cohorts: Ruzicka_CMC_minerva, MVP, UKBB [default= %default]", metavar="character"),
-  make_option(c("-s", "--superpopulation"), type="character", default="EUR", 
-              help="Superpopulation EUR, AFR, AMR, EAS, SAS, EUR.UKBB, AFR.UKBB, AMR.UKBB, EAS.UKBB, SAS.UKBB [default= %default]", metavar="character")
-); 
+              help="recipe file name", metavar="character")
+) 
+#WORKDIR         <- get_entry("WORKDIR",        recipe)
+#MASTERLIST      <- get_entry("MASTERLIST",     recipe)
+#POPULATION      <- get_entry("POPULATION",     recipe)      # e.g., "EUR.UKBB"
+#SUPERPOPULATION <- get_entry("SUPERPOPULATION",recipe)      # e.g., "EUR.UKBB"
+#FILTERED_BIM    <- get_entry("FILTERED.BIM.PREFIX", recipe) # may be one or many, comma/space sep
+#PHI_STR         <- get_entry("PHI",            recipe)      # e.g., "auto,1e-06,1e-04,1e-02,1e+00"
+#SCORESOUTPUTDIR <- get_entry("SCORESOUTPUTDIR",recipe)
+#WORKDIR         <- get_entry("WORKDIR", recipe)        # used to make TEMPDIR
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
+
+if(FALSE){
+  #DEBUG
+  library("optparse")
+  library("data.table")
+  opt <- list(recipe = '/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/adlerGWAS_UKBB.recipe')
+}
 
 if (is.null(opt$recipe)){
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file).n", call.=FALSE)
 }
+recipe <- fread(opt$recipe)
+
+cluster         <- get_entry("CLUSTER",        recipe)
+CLUSTER_FILE    <- get_entry("CLUSTER.FILE",   recipe)
+COHORT_FILE     <- get_entry("COHORT.FILE",    recipe)
+COHORT          <- get_entry("COHORT",         recipe)
 
 ################
 # GET PARAMETERS
-if(opt$cluster == "minerva") source("/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/R/PRScs_0.settings_handler_CMC_EUR.PGC.R")
+if(cluster == "minerva") source("/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/R/PRScs_0.settings_handler_CMC_EUR.PGC.R")
 #FIXME add the other clusters here as well (or include the PRSscs_0.settings handler here) or write it as a package
 PRSCS_settings_handler(
   # defaults are for prototyping
-  cluster = opt$cluster,
-  cluster.settings.file = opt$clusterfile,
+  cluster = cluster,
+  cluster.settings.file = CLUSTER_FILE,
   project.recipe = opt$recipe,
-  cohort.settings.file = opt$cohortfile,
-  cohort = opt$cohort
+  cohort.settings.file = COHORT_FILE,
+  cohort = COHORT
 )
 #PRSCS_settings_handler() # for prototyping
 
@@ -114,6 +125,7 @@ for (BIMPREFIX in ALLBIMPREFIX) { # models are build for each set of variants.
       TRAITDIR <- paste0(OUTPUTDIR, "/", prscsname)
       if (!dir.exists(TRAITDIR)) dir.create(TRAITDIR)
       for (chr in 1:22) {
+        browser()
         job.id <- paste0(prscsname, ".", thisphi, ".", chr)
         b.sub  <- paste0(PRSCS.BSUB.PREFIX, 
                          ' -J ', job.id,

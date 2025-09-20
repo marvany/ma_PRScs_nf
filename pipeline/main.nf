@@ -32,7 +32,10 @@ params.cohort_file = recipe['COHORT.FILE']                      // Should be con
 params.cluster = recipe['CLUSTER']                              // Used as reference by the Clusters.csv file
 params.cohort = recipe['COHORT']                                // Used as reference at the Cohorts.csv file to source cohort specific data
 params.superpopulation = recipe['SUPERPOPULATION']              // Used as reference at both Clusters.csv and Cohorts.csv
-
+params.firstrun = recipe['FIRSTRUN']
+params.coltypes = recipe['COLTYPES']
+params.convdir = recipe['CONVDIR']
+params.firstrun = recipe['FIRSTRUN']
 
 // modelsDir is used to source the generated models jobs
 params.gwas_dir_basename = file(params.gwas_dir).baseName
@@ -57,7 +60,7 @@ process READY_GWAS {
     path "PRSsumstats.out", emit: log_out, optional: true
     path "PRSsumstats.err", emit: log_err, optional: true
     
-    script:
+    script: // logfiles are stored inside the WORKDIRECTORY of each job // 2> (stderr), >(...) (passes sterr), stduf -oL (process each new line), tee -a (duplicates to file and echo), >&1 (echo goes to stdout)  
     """
     #!/bin/bash
     set -euo pipefail
@@ -67,11 +70,16 @@ process READY_GWAS {
     
     echo "Starting GWAS formatting at: \$(date)"
     echo "Working directory: \$(pwd)"
-    
-    # Execute the R script for GWAS formatting
-    Rscript --verbose ${params.scripts_dir}/PRScs_1.ready_GWAS_CMC.R \\
-    - 
-    > PRSsumstats.out 2> PRSsumstats.err
+
+    Rscript --verbose ${params.scripts_dir}/PRScs_1.ready_GWAS_CMC.R \
+      -r ${params.recipe} \
+      -f ${params.firstrun ?: 'FALSE'} \
+      -o ${params.gwas_dir} \
+      -t ${params.coltypes} \
+      -v ${params.convdir} \
+      -c ${params.cluster} \
+      -w ${params.workdir} \
+      2> >(stdbuf -oL tee -a PRSsumstats.err >&1)
     
     echo "GWAS formatting completed at: \$(date)"
     """
@@ -102,12 +110,7 @@ process GENERATE_MODELS {
     
     # Execute the R script for model generation
     Rscript --verbose ${params.scripts_dir}/PRScs_2.generate_PRScs_models_phigrid_and_auto_CMC_EUR.PGC.R \\
-        -r ${params.recipe} \\
-        -f ${params.cluster_file} \\
-        -c ${params.cluster} \\
-        -a ${params.cohort_file} \\
-        -b ${params.cohort} \\
-        -s ${params.superpopulation} > PRScs_create_models.out 2> PRScs_create_models.err
+        -r ${params.recipe} > PRScs_create_models.out 2> PRScs_create_models.err
     
     echo "PRScs model generation completed at: \$(date)"
     """
@@ -253,7 +256,7 @@ workflow {
     Output directory    : ${params.logs_outdir}
     Scripts directory   : ${params.scripts_dir}
     Stored Jobs Dir     : ${modelsDir}
-    Logs Dir            : ${params.logs_outdir}
+    Logs Dir            : ${params.logs_outdir}e
     ========================================================================================
     """
 

@@ -6,12 +6,15 @@
 # where SNP is the rs ID, A1 is the reference/effect allele, A2 is the alternative allele, BETA/OR is the effect/odds ratio of the reference allele, P is the p-value of the effect. In fact, BETA/OR is only used to determine the direction of an association, and therefore if z-scores or even +1/-1 indicating effect directions are presented in the BETA column, the algorithm should still work properly.
 # https://www.biostars.org/p/310841/ for definitions of alleles
 
+# Clarifications:
+# 1) If INPUTGWASDIR and OUTPUT both have the same file, then this file won't be processed
+
 # Notation for Karen's edits 
 ### = Georgios' code that Karen commented out
 #### = Karen's comments
 ##### = Whoever's code that Marios commented out
 ## --------------------------------- NEXTFLOW ADDITIONS
-
+message('MA_ENTRANCE: ENTERED')
 library(optparse)
 library(data.table)
 
@@ -22,31 +25,43 @@ get_entry <- function(key, recipe) {
 }
 
 option_list <- list(
-  make_option("-r", "--recipe",     type = "character", help = "Recipe"),
-  make_option("-f", "--firstrun",  type = "logical", default = FALSE,
-              help = "First pass to inspect headers and write column.types.tsv [default %default]"),
-  make_option("output", "--formattedGWASdir",    type = "character", default = "/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/",
-              help = "OUTPUTDIR (directory to write formatted GWAS files)"),
-  make_option("-c", "--coltypes",  type = "character", default = "/sc/arion/projects/va-biobank/Georgios/tools/gentools/modules/PRScs/resources/GWAS.column.types.csv",
-              help = "CSV mapping of column names to Types"),
-  make_option("-conv", "--convdir",   type = "character", default = "/group/research/mvp006/data/PRScs/Conversion_files",
-              help = "Directory holding/where to write conversion tables"),
-  make_option("-cl", "--cluster",   type = "character", default = "minerva",
-              help = "Cluster name toggle for behavior (e.g., minerva | genisis)"),
-  make_option("-wd", "--wd",     type = "character", default = "/sc/arion/projects/va-biobank/PROJECTS/prscs_psychad_nf_v1",
-              help = "Working directory to set at start")
+  make_option(c("-r","--recipe"),        type="character", help="Recipe"),
+  make_option(c("-f","--firstrun"),      type="logical",   default=FALSE,
+              help="First pass to inspect headers and write column.types.tsv [default %default]"),
+  make_option(c("-o","--formattedGWASdir"), type="character",
+              default="/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/",
+              help="OUTPUTDIR (directory to write formatted GWAS files)"),
+  make_option(c("-t","--coltypes"),      type="character",
+              default="/sc/arion/projects/va-biobank/Georgios/tools/gentools/modules/PRScs/resources/GWAS.column.types.csv",
+              help="CSV mapping of column names to Types"),
+  make_option(c("-v","--convdir"),       type="character",
+              default="/group/research/mvp006/data/PRScs/Conversion_files",
+              help="Directory holding/where to write conversion tables"),
+  make_option(c("-c","--cluster"),       type="character",
+              default="minerva",
+              help="Cluster name toggle for behavior (e.g., minerva | genisis)"),
+  make_option(c("-w","--wd"),            type="character",
+              default="/sc/arion/projects/va-biobank/PROJECTS/prscs_psychad_nf_v1",
+              help="Working directory to set at start")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
+message('MA_ENTRANCE: PARSED OPT')
 
 ### Settings
+recipe              <- fread(opt$recipe)
+if(FALSE){
+# for debugging
+recipe <- fread('/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/adlerGWAS_UKBB.recipe')
+firstrun = FALSE
+}
+
 setwd(opt$wd)  
 
-recipe              <- opt$recipe
 firstrun            <- isTRUE(opt$firstrun) 
-INPUTGWASDIR       <- get_entry("GWAS.DIR", recipe)   # input GWAS (ORIGINAL.GWAS.DIR)
-OUTPUTDIR           <- opt$formattedGWASdir           # formatted GWAS will be stored here
-CONVERSIONTABLESDIR <- opt$convdir
+INPUTGWASDIR       <- get_entry("ORIGINAL.GWAS.DIR", recipe)   # input GWAS (ORIGINAL.GWAS.DIR)
+OUTPUTDIR           <- get_entry("GWAS.DIR", recipe)           # formatted GWAS will be stored here
+
 
 
 WORKDIR               <- get_entry("WORKDIR", recipe)
@@ -59,8 +74,9 @@ POPULATION            <- get_entry("POPULATION", recipe)
 MASTERLIST            <- get_entry("MASTERLIST", recipe)
 MAINOUTPUTDIR         <- get_entry("MAINOUTPUTDIR", recipe)   # weights
 SCORESOUTPUTDIR       <- get_entry("SCORESOUTPUTDIR", recipe) # scores
-
-
+COLUMNTYPES           <- get_entry("COLTYPES", recipe)
+CONVERSIONTABLESDIR   <- get_entry("CONVDIR", recipe)
+cluster               <- get_entry("CLUSTER", recipe)
 
 
 
@@ -94,6 +110,7 @@ columntypes <- columntypes[Type %in% c("SNP", "A1", "A2", "OR", "lnOR", "BETA", 
 columntypes <- as.data.frame(columntypes)
 rownames(columntypes) <- columntypes$Column.name
 
+message('MA_ENTRANCE: ENTERING FIRSTRUN = ', firstrun)
 
 ## First run: get header information for all files ##
 if (firstrun) { # first run
@@ -126,6 +143,9 @@ files <- data.frame(
 files <- files[(!grepl("readme", files))]
 files <- files[(!grepl("pdf$", files))]
 
+message('MA_ENTRANCE: FILES LENGTH = ', length(files))
+
+
 # prototyping
 # i = 0
 # test <- c(files$files,
@@ -139,11 +159,12 @@ for (filename in c(files$files#,
                    #paste0(INPUTGWASDIR, "/MA.gwama_.out_.isq75.nstud6_.clean_.p1e-5_0.txt"),
                    #paste0(INPUTGWASDIR, "/MO.gwama_.out_.isq75.nstud6_.clean_.p1e-5_0.txt")
 )) {
+  browser()
   message(paste0("Now processing: ", basename(filename)))
   # prototyping  #i = 0
   #i = i+1; filename <- files$files[i]; files$files[i]; filename %in% DONOTPROCESS
   if (basename(filename) %in% DONOTPROCESS) {message("This file is in the exclusion list")} else { #continue
-    if (!file.exists(paste0(OUTPUTDIR,"/", basename(filename)))) {
+    if (!file.exists(paste0(OUTPUTDIR,"/", basename(filename)))) { # if file exists in output we continue
       if (basename(filename) == "pgcAN2.2019-07.vcf.tsv") {
         x <- fread(filename, skip = "CHROM\t") } else {
           if (cluster == "genisis") {
