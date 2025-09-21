@@ -102,7 +102,7 @@ process GENERATE_MODELS {
     #!/bin/bash
     set -euo pipefail
     
-    # Change to the R directory
+    # Change to the R directory (for easy look up of log)
     cd ${params.scripts_dir}
     
     echo "Starting PRScs model generation at: \$(date)"
@@ -169,6 +169,7 @@ process JOIN_MODELS {
     
     input:
     val models_complete
+    val _
     
     output:
     val true, emit: complete
@@ -269,18 +270,23 @@ workflow {
 
     // Discover all job scripts once models are generated
     DISCOVER_JOB_SCRIPTS(GENERATE_MODELS.out.complete, modelsDir.toString())
-    def jobScripts = DISCOVER_JOB_SCRIPTS.out.list.splitText()      // one line -> one item
-                            .map { file(it) }                       // cast to Path
 
-    // Run each script (parallel tasks)
+    def jobScripts = DISCOVER_JOB_SCRIPTS.out.list.splitText()
+                                .map   { it.trim().replaceAll(/\r$/, '') } // strip trailing spaces/newlines and stray CRs
+                                .filter{ it }                              // drop empty lines
+                                .map   { file(it) }                        // convert to Path objects
+
+   
+
+
     RUN_JOB_SCRIPT(jobScripts)
+    def jobs_done = RUN_JOB_SCRIPT.out.complete.count()   // barrier token
 
     // 3. R3: Join chromosome-specific models (depends on R2)
-    JOIN_MODELS(GENERATE_MODELS.out.complete)
+    JOIN_MODELS(GENERATE_MODELS.out.complete, jobs_done)
     
     // 4. R4: Score individuals using the models (depends on R3)
     SCORE_INDIVIDUALS(JOIN_MODELS.out.complete)
-    
 }
 
 /*

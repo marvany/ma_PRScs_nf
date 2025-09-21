@@ -3,7 +3,7 @@ WORKDIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/results/work,Where ev
 ORIGINAL.GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/adler_preformatted_gwass,
 GWAS.DIR,/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/input_gwas/gwas_formatted/adler_preformatted_gwass,
 COHORT,UKBB,Cohort identifier
-FILTERED.BIM.PREFIX,/sc/arion/projects/va-biobank/resources/LD_reference_panels/ldblk_ukbb_eur/snpinfo_ukbb_hm3,Individual Genotypes
+FILTERED.BIM.PREFIX,/sc/arion/projects/va-biobank/resources/LD_reference_panels/ldblk_ukbb_eur/snpinfo_ukbb_hm3_nohdr,Individual Genotypes
 ORIGINAL.GENFILE.TYPE,,
 ORIGINAL.GENFILE,,
 POPULATION,EUR.UKBB,

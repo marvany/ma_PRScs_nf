@@ -45,7 +45,8 @@ PRSCS_settings_handler <- function(
   
   ######################
   # LOAD COHORT SETTINGS
-  cohort.settings       <- fread(cohort.settings.file)
+  cohort.settings       <- fread(cohort.settings.file, header = TRUE)
+  
   PLINK2.EXCLUDE.SNPS   <- cohort.settings[type=="PLINK2.EXCLUDE.SNPS"][[cohort]]
   PLINK2.EUR.KEEP.IDS   <- cohort.settings[type=="PLINK2.EUR.KEEP.IDS"][[cohort]]
   PLINK2.EUR.REMOVE.IDS <- cohort.settings[type=="PLINK2.EUR.REMOVE.IDS"][[cohort]]

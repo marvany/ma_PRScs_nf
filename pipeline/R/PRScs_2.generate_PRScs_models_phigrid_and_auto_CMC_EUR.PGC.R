@@ -13,6 +13,12 @@
 library("optparse")
 library("data.table")
 
+get_entry <- function(key, recipe) {
+  v <- recipe[type == key, entry]
+  v <- v[!is.na(v) & nzchar(v)]
+  if (length(v)) v[[1L]] else ""
+}
+
 option_list = list(
   make_option(c("-r", "--recipe"), type="character", default=NULL, 
               help="recipe file name", metavar="character")
@@ -33,7 +39,14 @@ if(FALSE){
   #DEBUG
   library("optparse")
   library("data.table")
+  get_entry <- function(key, recipe) {
+    v <- recipe[type == key, entry]
+    v <- v[!is.na(v) & nzchar(v)]
+  if (length(v)) v[[1L]] else ""
+  }
+
   opt <- list(recipe = '/sc/arion/projects/va-biobank/PROJECTS/ma_PRScs_nf/pipeline/config/adlerGWAS_UKBB.recipe')
+
 }
 
 if (is.null(opt$recipe)){
@@ -102,6 +115,7 @@ gwass <- fread(MASTERLIST)
 MAINOUTPUTDIR <- file.path(MAINOUTPUTDIR, basename(INPUT))
 ## Submittting the jobs
 for (BIMPREFIX in ALLBIMPREFIX) { # models are build for each set of variants.
+
   if (cluster == "genisis") {
     genbackground  <- basename(dirname(BIMPREFIX))
   } else genbackground  <- basename(BIMPREFIX)
@@ -115,6 +129,7 @@ for (BIMPREFIX in ALLBIMPREFIX) { # models are build for each set of variants.
     
     ### preparing jobs
     for (i in files) {
+      
       not_gzipped = function(x) sub("\\.gz$", "", x) # in case it is stored gzipped
       n_sum       <- gwass[File_name == not_gzipped(basename(i)), "N_sum", with = F]
       prscsname   <- gwass[File_name == not_gzipped(basename(i)), "PRS_abbreviation", with = F]
@@ -124,8 +139,9 @@ for (BIMPREFIX in ALLBIMPREFIX) { # models are build for each set of variants.
       if (!dir.exists(jobs)) dir.create(jobs)
       TRAITDIR <- paste0(OUTPUTDIR, "/", prscsname)
       if (!dir.exists(TRAITDIR)) dir.create(TRAITDIR)
+      
       for (chr in 1:22) {
-        browser()
+        
         job.id <- paste0(prscsname, ".", thisphi, ".", chr)
         b.sub  <- paste0(PRSCS.BSUB.PREFIX, 
                          ' -J ', job.id,
